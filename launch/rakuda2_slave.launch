@@ -1,0 +1,10 @@
+<launch>
+  <arg name="usb_port"     default="/dev/ttyUSB0"/>
+  <arg name="baud_rate"    default="1000000"/>
+
+  <node pkg="rakuda2_example" name="rakuda2_slave" type="rakuda2_example.py" output="screen">
+    <param name="mode"         value="slave"/>
+    <param name="usb_port"     value="$(arg usb_port)"/>
+    <param name="baud_rate"    value="$(arg baud_rate)"/>
+  </node>
+</launch>
