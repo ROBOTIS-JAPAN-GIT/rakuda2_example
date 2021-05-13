@@ -1,10 +1,21 @@
 <launch>
   <arg name="usb_port"     default="/dev/ttyUSB0"/>
   <arg name="baud_rate"    default="1000000"/>
+  <arg name="namespace"             default="camera_master"/>
+  <arg name="enable_pointcloud"     default="false" />
+  <arg name="serial_no"             default=""/>
 
+  <!-- rakuda2 example node -->
   <node pkg="rakuda2_example" name="rakuda2_master" type="rakuda2_example.py" output="screen">
     <param name="mode"         value="master"/>
     <param name="usb_port"     value="$(arg usb_port)"/>
     <param name="baud_rate"    value="$(arg baud_rate)"/>
   </node>
+
+  <!-- realsense camera node -->
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="camera"                value="$(arg namespace)"/>
+    <arg name="enable_pointcloud"   value="$(arg enable_pointcloud)" />
+    <arg name="serial_no"           value="$(arg serial_no_master)"/>
+  </include>
 </launch>
