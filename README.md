@@ -85,4 +85,4 @@ In slave mode, all motor torque is enabled and the data obtained from the "joint
 [U2D2 Power Hub](https://emanual.robotis.com/docs/en/parts/interface/u2d2_power_hub/)
 
 ## e-Manual for IntelRealSense
-[IntelRealSense]https://github.com/IntelRealSense/realsense-ros
+[IntelRealSense](https://github.com/IntelRealSense/realsense-ros)
