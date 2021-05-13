@@ -2,8 +2,6 @@
   <arg name="usb_port"     default="/dev/ttyUSB0"/>
   <arg name="baud_rate"    default="1000000"/>
 
-  <rosparam command="load" file="$(find rakuda2_example)/config/param_config.yaml"/>
-
   <node pkg="rakuda2_example" name="rakuda2_master" type="rakuda2_example.py" output="screen">
     <param name="mode"         value="master"/>
     <param name="usb_port"     value="$(arg usb_port)"/>
