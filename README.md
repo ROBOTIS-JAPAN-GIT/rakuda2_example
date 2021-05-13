@@ -47,8 +47,8 @@ $ dmesg | tail -n 10
 # [10981.780375] usb 1-5: Detected FT232H
 # [10981.781315] usb 1-5: FTDI USB Serial Device converter now attached to ttyUSB0
 
-$ nano rakuda2_master.launch
 # Enter the USB port you just checked in the default field.
+$ nano rakuda2_master.launch
 # <arg name="usb_port"     default="/dev/ttyUSB0"/>
 
 # Copy rules file
