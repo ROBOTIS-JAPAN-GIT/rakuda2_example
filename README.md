@@ -15,6 +15,19 @@ cd ~/catkin_ws && catkin_make
 source ~/catkin_ws/devel/setup.bash
 ```
 
+## demo
+### When booting in master mode
+```bash
+roslaunch rakuda2_example rakuda2_master.launch
+```
+In master mode, the torque of all motors is disabled and the data of each joint is published in the "joint state".
+
+### When booting in slave mode
+```bash
+roslaunch rakuda2_example rakuda2_slave.launch
+```
+In slave mode, all motor torque is enabled and the data obtained from the "joint state" is written to each joint.
+
 ## ROBOTIS e-Manual for DynamixelSDK
 [DynamixelSDK](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_sdk/overview/)
 
