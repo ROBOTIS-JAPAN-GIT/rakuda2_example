@@ -31,6 +31,7 @@ CENTOR_POS_VALUE = 2048           # X-Series center position
 MAX_POS_VALUE    = 4095           # X-Series max position
 
 ADDR_TORQUE_ENABLE          = 64  # X-Series torque enable address
+ADDR_PROFILE_VELOCITY       = 112 # X-Series profile velocity address
 ADDR_GOAL_POSITION          = 116 # X-Series goal position address
 ADDR_PRESENT_POSITION       = 132 # X-Series present position address
 
@@ -45,23 +46,23 @@ PERIOD                      = 100 # 100Hz
 
 # List of joint names and IDs
 JOINTS_LIST = [
-    ["torso_yaw",       27]
-    #["head_yaw",        28]
-    #["head_pitch",      29],
-    #["r_arm_sh_pitch1", 1],
-    #["r_arm_sh_roll",   3],
-    #["r_arm_sh_pitch2", 5],
-    #["r_arm_el_yaw",    7],
-    #["r_arm_wr_roll",   9],
-    #["r_arm_wr_yaw",    11],
-    #["r_arm_grip",      31],
-    #["l_arm_sh_pitch1", 2],
-    #["l_arm_sh_roll",   4],
-    #["l_arm_sh_pitch2", 6],
-    #["l_arm_el_yaw",    8],
-    #["l_arm_wr_roll",   10],
-    #["l_arm_wr_yaw",    12],
-    #["l_arm_grip",      30]
+    ["torso_yaw",       27],
+    ["head_yaw",        28],
+    ["head_pitch",      29],
+    ["r_arm_sh_pitch1", 1],
+    ["r_arm_sh_roll",   3],
+    ["r_arm_sh_pitch2", 5],
+    ["r_arm_el_yaw",    7],
+    ["r_arm_wr_roll",   9],
+    ["r_arm_wr_yaw",    11],
+    ["r_arm_grip",      31],
+    ["l_arm_sh_pitch1", 2],
+    ["l_arm_sh_roll",   4],
+    ["l_arm_sh_pitch2", 6],
+    ["l_arm_el_yaw",    8],
+    ["l_arm_wr_roll",   10],
+    ["l_arm_wr_yaw",    12],
+    ["l_arm_grip",      30]
     ]
 
 class Dynamixel:
@@ -94,6 +95,11 @@ class Dynamixel:
         # Enable/Disable the torque of each joint
         for joint in JOINTS_LIST:
             self.__packet_h.write1ByteTxRx(self.__port_h, joint[ID], ADDR_TORQUE_ENABLE, torque)
+            # Init pose
+            #self.__packet_h.write4ByteTxRx(self.__port_h, joint[ID], 112, 4000)
+            #self.__packet_h.write4ByteTxRx(self.__port_h, joint[ID], ADDR_GOAL_POSITION, CENTOR_POS_VALUE)
+            #self.__packet_h.write4ByteTxRx(self.__port_h, joint[ID], 112, 0)
+
             # Set to read the angle of each joint in synchronization
             result = self.__sync_read.addParam(joint[ID])
             if result != True:
