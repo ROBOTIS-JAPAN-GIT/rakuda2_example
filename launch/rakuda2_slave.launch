@@ -1,21 +1,27 @@
 <launch>
-  <arg name="usb_port"     default="/dev/ttyUSB0"/>
-  <arg name="baud_rate"    default="1000000"/>
-  <arg name="namespace"             default="camera_slave"/>
-  <arg name="enable_pointcloud"     default="false"/>
-  <arg name="serial_no"             default=""/>
+  <arg name="usb_port"           default="/dev/ttyUSB0"/>
+  <arg name="baud_rate"          default="1000000"/>
+  <arg name="namespace"          default="camera_slave"/>
+  <arg name="enable_pointcloud"  default="false" />
+  <arg name="color_fps"          default="60"/>
+  <arg name="color_height"       default="480"/>
+  <arg name="color_width"        default="640"/>
+  <arg name="serial_no"          default=""/>
 
   <!-- rakuda2 example node -->
   <node pkg="rakuda2_example" name="rakuda2_slave" type="rakuda2_example.py" output="screen">
-    <param name="mode"         value="slave"/>
-    <param name="usb_port"     value="$(arg usb_port)"/>
-    <param name="baud_rate"    value="$(arg baud_rate)"/>
+    <param name="mode"      value="slave"/>
+    <param name="usb_port"  value="$(arg usb_port)"/>
+    <param name="baud_rate" value="$(arg baud_rate)"/>
   </node>
 
   <!-- realsense camera node -->
   <include file="$(find realsense2_camera)/launch/rs_camera.launch">
-    <arg name="camera"              value="$(arg namespace)"/>
-    <arg name="enable_pointcloud"   value="$(arg enable_pointcloud)"/>
-    <arg name="serial_no"           value="$(arg serial_no)"/>
+    <arg name="camera"             value="$(arg namespace)"/>
+    <arg name="enable_pointcloud"  value="$(arg enable_pointcloud)" />
+    <arg name="color_fps"          value="$(arg color_fps)"/>
+    <arg name="color_height"       value="$(arg color_height)"/>
+    <arg name="color_width"        value="$(arg color_width)"/>
+    <arg name="serial_no"          value="$(arg serial_no)"/>
   </include>
 </launch>
