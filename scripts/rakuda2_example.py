@@ -21,7 +21,9 @@
 import rospy
 import rosparam
 import math
+import time
 from sensor_msgs.msg import JointState
+from sensor_msgs.msg import Image
 from dynamixel_sdk import *
 
 PROTOCOL_VERSION            = 2.0 # DYNAMIXEL Protocol version
@@ -40,32 +42,35 @@ LEN_PRESENT_POSITION        = 4   # X-Series present position size
 
 TORQUE_ENABLE               = 1   # Torque enable value
 TORQUE_DISABLE              = 0   # Torque disable value
+PROFILE_VELOCITY            = 100 # X-Series profile velocity value
 NAME                        = 0   # Index of array joint names
 ID                          = 1   # Index of array joint ids
-PERIOD                      = 100 # 100Hz
+POSITION                    = 2   # Index of array joint positions
+PERIOD_MASTER               = 100 # 20Hz
+PERIOD_SLAVE                = 20  # 100Hz
+
 
 # List of joint names and IDs
 JOINTS_LIST = [
-    ["torso_yaw",       27],
-    ["head_yaw",        28],
-    ["head_pitch",      29],
-    ["r_arm_sh_pitch1", 1],
-    ["r_arm_sh_roll",   3],
-    ["r_arm_sh_pitch2", 5],
-    ["r_arm_el_yaw",    7],
-    ["r_arm_wr_roll",   9],
-    ["r_arm_wr_yaw",    11],
-    ["r_arm_grip",      31],
-    ["l_arm_sh_pitch1", 2],
-    ["l_arm_sh_roll",   4],
-    ["l_arm_sh_pitch2", 6],
-    ["l_arm_el_yaw",    8],
-    ["l_arm_wr_roll",   10],
-    ["l_arm_wr_yaw",    12],
-    ["l_arm_grip",      30]
-    ]
+    ["torso_yaw",       27, 2048],
+    ["head_yaw",        28, 2048],
+    ["head_pitch",      29, 2048],
+    ["r_arm_sh_pitch1", 1,  2048],
+    ["r_arm_sh_roll",   3,  2048],
+    ["r_arm_sh_pitch2", 5,  2048],
+    ["r_arm_el_yaw",    7,  2048],
+    ["r_arm_wr_roll",   9,  2048],
+    ["r_arm_wr_yaw",    11, 2048],
+    ["r_arm_grip",      31, 2048],
+    ["l_arm_sh_pitch1", 2,  2048],
+    ["l_arm_sh_roll",   4,  2048],
+    ["l_arm_sh_pitch2", 6,  2048],
+    ["l_arm_el_yaw",    8,  2048],
+    ["l_arm_wr_roll",   10, 2048],
+    ["l_arm_wr_yaw",    12, 2048],
+]
 
-class Dynamixel:
+class Dynamixel(object):
     def __init__(self, mode):
         # Handler initialization
         self.__port_h = PortHandler(rospy.get_param("~usb_port"))
@@ -86,24 +91,27 @@ class Dynamixel:
         else:
             rospy.loginfo("Failed to change the baudrate")
         
-        # Select the operation mode
-        if mode == "master":
-            torque = TORQUE_DISABLE
-        elif mode == "slave":
-            torque = TORQUE_ENABLE
 
-        # Enable/Disable the torque of each joint
+        #init pose
         for joint in JOINTS_LIST:
-            self.__packet_h.write1ByteTxRx(self.__port_h, joint[ID], ADDR_TORQUE_ENABLE, torque)
+            self.__packet_h.write1ByteTxRx(self.__port_h, joint[ID], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
             # Init pose
-            #self.__packet_h.write4ByteTxRx(self.__port_h, joint[ID], 112, 4000)
-            #self.__packet_h.write4ByteTxRx(self.__port_h, joint[ID], ADDR_GOAL_POSITION, CENTOR_POS_VALUE)
-            #self.__packet_h.write4ByteTxRx(self.__port_h, joint[ID], 112, 0)
+            time.sleep(0.01)
+            self.__packet_h.write4ByteTxRx(self.__port_h, joint[ID], ADDR_PROFILE_VELOCITY, PROFILE_VELOCITY)
+            self.__packet_h.write4ByteTxRx(self.__port_h, joint[ID], ADDR_GOAL_POSITION, joint[POSITION])
 
             # Set to read the angle of each joint in synchronization
             result = self.__sync_read.addParam(joint[ID])
             if result != True:
                 rospy.logerr("ID:%03d groupSyncRead addparam failed" % joint[ID])
+
+        # Select the operation mode
+        if mode == "master":
+            time.sleep(3)
+            self.__packet_h.write1ByteTxRx(self.__port_h, joint[ID], ADDR_TORQUE_ENABLE, TORQUE_DISABLE)
+        elif mode == "slave":
+            pass
+        rospy.loginfo("Succeeded initialization")
 
     def send_read_command(self):
         # Send a synchronous read command
@@ -170,46 +178,73 @@ class Dynamixel:
             radian = 0.0
         return radian
 
-def joint_states_callback(data):
-    pos_list = []
+class Rakuda2(object):
+    def __init__(self, mode):
+        self.joint_state = JointState()
+        self.is_joint_state = False
 
-    # Set the received joint angle data to DYNAMIXEL
-    for joint, pos in zip(JOINTS_LIST, data.position):
-        dynamixel.write_position(joint[ID], pos)
-    dynamixel.send_write_command()
+        self.image = Image()
+        self.is_image = False
 
-def main(mode):
-    # In master mode, read and send DYNAMIXEL joint data
-    if mode == "master":
-        # Creating a joint states publisher
-        joint_pub = rospy.Publisher('joint_states', JointState, queue_size=1)
+        self.mode = mode
+        self.dynamixel = Dynamixel(mode)
 
-        # Setting the operation period
-        rate = rospy.Rate(PERIOD)
+    def joint_states_callback(self, data):
+        self.joint_state.position = data.position
+        self.is_joint_state = True
 
-        # Loop until the node shuts down
-        while not rospy.is_shutdown():
+    def image_callback(self, image):
+        self.image.data = image.data
+        self.is_image = True
 
-            # Create joint state
-            joint_data = JointState()
-            joint_data.header.stamp = rospy.Time.now()
-            # Check of reading DYNAMIXEL angle data
-            if dynamixel.send_read_command() == True:
-                # Set joint name and joint angle
-                for joint in JOINTS_LIST:
-                    joint_data.name.append(joint[NAME])
-                    joint_data.position.append(dynamixel.read_position(joint[ID]))
+    def run(self):
+        # In master mode, read and send DYNAMIXEL joint data
+        if self.mode == "master":
+            # Creating a joint states publisher
+            joint_pub = rospy.Publisher('joint_states', JointState, queue_size=1)
 
-            # Send joint states
-            joint_pub.publish(joint_data)
-            rate.sleep()
-    # In slave mode, write and recv DYNAMIXEL joint data
-    elif mode == "slave":
-        # Creating a joint states subscriber
-        joint_sub = rospy.Subscriber('joint_states', JointState, joint_states_callback)
-        rospy.spin()
-    else:
-        rospy.loginfo("Set mode to master or slave")
+            # Setting the operation period
+            rate = rospy.Rate(PERIOD_MASTER)
+
+            # Loop until the node shuts down
+            while not rospy.is_shutdown():
+
+                # Create joint state
+                joint_data = JointState()
+                joint_data.header.stamp = rospy.Time.now()
+                # Check of reading DYNAMIXEL angle data
+                if self.dynamixel.send_read_command() == True:
+                    # Set joint name and joint angle
+                    for joint in JOINTS_LIST:
+                        joint_data.name.append(joint[NAME])
+                        joint_data.position.append(self.dynamixel.read_position(joint[ID]))
+                # Send joint states
+                joint_pub.publish(joint_data)
+                rate.sleep()
+        # In slave mode, write and recv DYNAMIXEL joint data
+        elif self.mode == "slave":
+            # Creating a joint states subscriber
+            joint_sub = rospy.Subscriber('joint_states', JointState, self.joint_states_callback)
+
+            rate = rospy.Rate(PERIOD_SLAVE)
+            # Loop until the node shuts down
+            while not rospy.is_shutdown():
+                if self.is_joint_state == True and self.is_image == True :
+
+                    # joint and image data
+                    rospy.loginfo(self.joint_state.position)
+                    rospy.loginfo(self.image.data)
+
+                    # Set the received joint angle data to DYNAMIXEL
+                    for joint, pos in zip(JOINTS_LIST, self.joint_state.position):
+                        self.dynamixel.write_position(joint[ID], pos)
+                    self.dynamixel.send_write_command()
+                    #self.is_joint_state = False
+                    #self.is_image = False
+                rate.sleep()
+
+        else:
+            rospy.loginfo("Set mode to master or slave")
 
 if __name__ == '__main__':
     try:
@@ -219,8 +254,8 @@ if __name__ == '__main__':
         # Get the operating mode
         mode = rospy.get_param("~mode")
 
-        # Initialize DYNAMIXEL and execute main processing
-        dynamixel = Dynamixel(mode)
-        main(mode)
+        # Initialize and execute main processing
+        rakuda2 = Rakuda2(mode)
+        rakuda2.run()
     except rospy.ROSInterruptException:
         pass
