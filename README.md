@@ -64,13 +64,27 @@ $ sudo udevadm trigger
 ```bash
 roslaunch rakuda2_example rakuda2_master.launch
 ```
-In master mode, the torque of all motors is disabled and the data of each joint is published in the "joint state".
+
+In master mode, it moves to the initial position, and after 3s, the torque of all the motors is disabled.
+The data of each joint is published in the "/joint state".
 
 ### When booting in slave mode
 ```bash
 roslaunch rakuda2_example rakuda2_slave.launch
 ```
-In slave mode, all motor torque is enabled and the data obtained from the "joint state" is written to each joint.
+In slave mode, it moves to the initial position, and the all motor torque is enabled.
+The data obtained from the "/joint state" is written to each joint.
+
+
+### Save to rosbag
+```bash
+rosbag recoard -a -O rakuda_data.bag
+```
+
+### Play from rosbag
+```bash
+rosbag play rakuda_data.bag
+```
 
 ## ROBOTIS e-Manual for DynamixelSDK
 [DynamixelSDK](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_sdk/overview/)
