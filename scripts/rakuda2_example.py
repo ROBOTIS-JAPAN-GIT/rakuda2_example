@@ -27,13 +27,17 @@ from sensor_msgs.msg import Image
 from dynamixel_sdk import *
 
 PROTOCOL_VERSION            = 2.0 # DYNAMIXEL Protocol version
- 
-MIN_POS_VALUE    = 0              # X-Series min position
-CENTOR_POS_VALUE = 2048           # X-Series center position
-MAX_POS_VALUE    = 4095           # X-Series max position
+BROADCAST_ID                = 254
+
+MIN_POS_VALUE               = 0    # X-Series min position
+CENTOR_POS_VALUE            = 2048 # X-Series center position
+MAX_POS_VALUE               = 4095 # X-Series max position
 
 ADDR_TORQUE_ENABLE          = 64  # X-Series torque enable address
-ADDR_PROFILE_VELOCITY       = 112 # X-Series profile velocity address
+ADDR_POS_D                  = 80  # X-Series potision D gain address
+ADDR_POS_I                  = 82  # X-Series potision I gain address
+ADDR_POS_P                  = 84  # X-Series potision P gain address
+ADDR_GOAL_PWM               = 100 # X-Series profile velocity pwm
 ADDR_GOAL_POSITION          = 116 # X-Series goal position address
 ADDR_PRESENT_POSITION       = 132 # X-Series present position address
 
@@ -42,7 +46,10 @@ LEN_PRESENT_POSITION        = 4   # X-Series present position size
 
 TORQUE_ENABLE               = 1   # Torque enable value
 TORQUE_DISABLE              = 0   # Torque disable value
-PROFILE_VELOCITY            = 100 # X-Series profile velocity value
+P_GAIN                      = 448
+I_GAIN                      = 256
+D_GAIN                      = 128
+
 NAME                        = 0   # Index of array joint names
 ID                          = 1   # Index of array joint ids
 POSITION                    = 2   # Index of array joint positions
@@ -93,22 +100,20 @@ class Dynamixel(object):
         
 
         #init pose
+        self.__packet_h.write1ByteTxRx(self.__port_h, BROADCAST_ID, ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
         for joint in JOINTS_LIST:
-            self.__packet_h.write1ByteTxRx(self.__port_h, joint[ID], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
-            # Init pose
-            time.sleep(0.01)
-            self.__packet_h.write4ByteTxRx(self.__port_h, joint[ID], ADDR_PROFILE_VELOCITY, PROFILE_VELOCITY)
             self.__packet_h.write4ByteTxRx(self.__port_h, joint[ID], ADDR_GOAL_POSITION, joint[POSITION])
-
-            # Set to read the angle of each joint in synchronization
+            self.__packet_h.write2ByteTxRx(self.__port_h, joint[ID], ADDR_POS_P, P_GAIN)
+            self.__packet_h.write2ByteTxRx(self.__port_h, joint[ID], ADDR_POS_I, I_GAIN)
+            self.__packet_h.write2ByteTxRx(self.__port_h, joint[ID], ADDR_POS_D, D_GAIN)
+            # Set to read the angle of each joint
             result = self.__sync_read.addParam(joint[ID])
             if result != True:
                 rospy.logerr("ID:%03d groupSyncRead addparam failed" % joint[ID])
-
         # Select the operation mode
         if mode == "master":
             time.sleep(3)
-            self.__packet_h.write1ByteTxRx(self.__port_h, joint[ID], ADDR_TORQUE_ENABLE, TORQUE_DISABLE)
+            self.__packet_h.write1ByteTxRx(self.__port_h, BROADCAST_ID, ADDR_TORQUE_ENABLE, TORQUE_DISABLE)
         elif mode == "slave":
             pass
         rospy.loginfo("Succeeded initialization")
@@ -225,15 +230,16 @@ class Rakuda2(object):
         elif self.mode == "slave":
             # Creating a joint states subscriber
             joint_sub = rospy.Subscriber('joint_states', JointState, self.joint_states_callback)
+            image_sub = rospy.Subscriber('camera_slave/color/image_raw', Image, self.image_callback)
 
             rate = rospy.Rate(PERIOD_SLAVE)
             # Loop until the node shuts down
             while not rospy.is_shutdown():
                 if self.is_joint_state == True and self.is_image == True :
 
-                    # joint and image data
-                    rospy.loginfo(self.joint_state.position)
-                    rospy.loginfo(self.image.data)
+                    # print joint and image data
+                    #rospy.loginfo(self.joint_state.position)
+                    #rospy.loginfo(self.image.data)
 
                     # Set the received joint angle data to DYNAMIXEL
                     for joint, pos in zip(JOINTS_LIST, self.joint_state.position):
