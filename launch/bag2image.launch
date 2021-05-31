@@ -1,0 +1,15 @@
+<launch>
+  <!-- input bag file name-->
+  <arg name="topic_name"       default="/image_raw"/>
+  <arg name="input_file_name"  default="$(env HOME)/XXX.bag"/>
+  <arg name="output_file_name" default="$(env HOME)/Pictures/frame%04d.png"/>
+
+  <!-- play rosbag node -->
+  <node pkg="rosbag" type="play" name="rosbag" args="-d 2 $(arg input_file_name)"/>
+
+  <!-- save camera images -->
+  <node name="extract" pkg="image_view" type="extract_images" respawn="false" output="screen">
+    <remap from="image" to="$(arg topic_name)"/>
+    <param name="filename_format" value="$(arg output_file_name)"/>
+  </node>
+</launch>
