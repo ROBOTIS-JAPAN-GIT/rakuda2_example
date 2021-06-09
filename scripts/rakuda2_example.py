@@ -77,7 +77,7 @@ JOINTS_LIST = [
     ["l_arm_el_yaw",    8,  2048],
     ["l_arm_wr_roll",   10, 2048],
     ["l_arm_wr_yaw",    12, 2048],
-    ["l_arm_grip",      32, 2048],
+    ["l_arm_grip",      30, 2048],
 ]
 
 class Dynamixel(object):
