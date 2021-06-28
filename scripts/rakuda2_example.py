@@ -64,20 +64,20 @@ JOINTS_LIST = [
     ["head_pitch",      29, 2048],
 
     ["r_arm_sh_pitch1", 1,  2048],
-    ["r_arm_sh_roll",   3,  2048],
+    ["r_arm_sh_roll",   3,  1024],
     ["r_arm_sh_pitch2", 5,  2048],
-    ["r_arm_el_yaw",    7,  2048],
+    ["r_arm_el_yaw",    7,  1536],
     ["r_arm_wr_roll",   9,  2048],
-    ["r_arm_wr_yaw",    11, 2048],
+    ["r_arm_wr_yaw",    11, 1536],
     ["r_arm_grip",      31, 2048],
 
     ["l_arm_sh_pitch1", 2,  2048],
-    ["l_arm_sh_roll",   4,  2048],
+    ["l_arm_sh_roll",   4,  3072],
     ["l_arm_sh_pitch2", 6,  2048],
-    ["l_arm_el_yaw",    8,  2048],
+    ["l_arm_el_yaw",    8,  2560],
     ["l_arm_wr_roll",   10, 2048],
-    ["l_arm_wr_yaw",    12, 2048],
-    ["l_arm_grip",      30, 2048],
+    ["l_arm_wr_yaw",    12, 2560],
+    ["l_arm_grip",      30, 2048]
 ]
 
 class Dynamixel(object):
