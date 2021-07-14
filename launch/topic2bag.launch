@@ -1,0 +1,9 @@
+<launch>
+  <!-- output bag file setting-->
+  <arg name="topic_name1"       default="/joint_states"/>
+  <arg name="topic_name2"       default="/camera_master/color/image_raw"/>
+  <arg name="output_file_name" default="$(env HOME)/output.bag"/>
+
+  <!-- record rosbag node -->
+  <node pkg="rosbag" type="record" name="rosbag" args="-O $(arg output_file_name) $(arg topic_name1) $(arg topic_name2)"/>
+</launch>

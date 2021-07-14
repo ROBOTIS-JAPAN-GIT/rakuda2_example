@@ -3,12 +3,14 @@
   <arg name="baud_rate"          default="1000000"/>
   <arg name="namespace"          default="camera_master"/>
   <arg name="enable_pointcloud"  default="false" />
+  <arg name="enable_depth"       default="false" />
   <arg name="color_fps"          default="60"/>
   <arg name="color_height"       default="480"/>
   <arg name="color_width"        default="640"/>
   <arg name="serial_no"          default=""/>
+  <arg name="initial_reset"      default="true"/>
 
-  <!-- rakuda2 example node -->
+  <!-- rakuda2 example node --> 
   <node pkg="rakuda2_example" name="rakuda2_master" type="rakuda2_example.py" output="screen">
     <param name="mode"      value="master"/>
     <param name="usb_port"  value="$(arg usb_port)"/>
@@ -19,9 +21,11 @@
   <include file="$(find realsense2_camera)/launch/rs_camera.launch">
     <arg name="camera"             value="$(arg namespace)"/>
     <arg name="enable_pointcloud"  value="$(arg enable_pointcloud)" />
+    <arg name="enable_depth"       value="$(arg enable_depth)" />
     <arg name="color_fps"          value="$(arg color_fps)"/>
     <arg name="color_height"       value="$(arg color_height)"/>
     <arg name="color_width"        value="$(arg color_width)"/>
     <arg name="serial_no"          value="$(arg serial_no)"/>
+    <arg name="initial_reset"      value="$(arg initial_reset)"/>
   </include>
 </launch>
