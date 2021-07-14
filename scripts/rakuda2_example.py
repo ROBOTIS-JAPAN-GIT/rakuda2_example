@@ -46,7 +46,7 @@ LEN_PRESENT_POSITION        = 4   # X-Series present position size
 
 TORQUE_ENABLE               = 1   # Torque enable value
 TORQUE_DISABLE              = 0   # Torque disable value
-P_GAIN                      = 448
+P_GAIN                      = 512
 I_GAIN                      = 256
 D_GAIN                      = 128
 
