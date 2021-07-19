@@ -81,9 +81,21 @@ The data obtained from the "/joint state" is written to each joint.
 rosbag recoard -a -O rakuda_data.bag
 ```
 
+or 
+
+```bash
+roslaunch rakuda2_example topic2bag.launch
+```
+Note: Save only the topics specified in the launch file.
+
 ### Play from rosbag
 ```bash
-rosbag play rakuda_data.bag
+rosbag play output.bag
+```
+
+###  Acquisition of image data from rosbag
+```bash
+roslaunch rakuda2_example bag2image.launch input_file_name:=output.bag topic_name:=/camera_slave/color/image_raw
 ```
 
 ## ROBOTIS e-Manual for DynamixelSDK
