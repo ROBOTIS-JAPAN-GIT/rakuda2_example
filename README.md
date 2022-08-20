@@ -1,5 +1,5 @@
 # Rakuda-2
-![Rakuda2](https://user-images.githubusercontent.com/41886736/118063868-dd2bb580-b3d4-11eb-804c-80fe71bc2e1a.png)
+![Rakuda2](https://user-images.githubusercontent.com/5852451/185742101-8763c472-fa0c-4e19-9ec5-7687322ddaa2.png)
 
 ## Quick Start
 
